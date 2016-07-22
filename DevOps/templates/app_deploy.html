@@ -1,0 +1,147 @@
+{% extends 'monitor.html' %}
+
+{% block content %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("button#pop_options").click(function(){
+            $(".deploy_select").fadeIn(600);
+            $(".blackbox").show();
+        });
+        $("#select_close").click(function(){
+            var sel_operation = "<option selected value=''>请选择</option><option value='服务器初始化'>服务器初始化</option> <option value='功能服务器部署'>功能服务器部署</option> <option value='应用发布'>应用发布</option>";
+            var sel_function = "<option selected value=''>请选择</option><option value='nginx'>nginx</option><option value='nagios'>nagios</option><option value='tomcat'>tomcat</option><option value='mysql'>mysql</option>";
+            var sel_deploy_type = "<option selected value=''>请选择</option><option value='测试'>测试</option><option value='正式'>正式</option>";
+            $("select").empty();
+            $(sel_operation).appendTo("#operations");
+            $(sel_function).appendTo("#func");
+            $(sel_deploy_type).appendTo("#dp_type");
+            $(".sel_second, .deploy_select, .blackbox").hide();
+            })
+        })
+</script>
+<script>
+    function pop_functions(operation){
+        var sel = $("#select_package, #select_func, #select_deploy_type");
+        if(operation.value == "服务器初始化")
+        {
+            sel.find("option:selected").val('');
+            sel.hide();
+            $(".sel_second, #select_package").show();
+        }
+        else if(operation.value == "功能服务器部署")
+        {
+            sel.find("option:selected").val('');
+            sel.hide();
+            $(".sel_second, #select_func").show();
+        }
+        else if(operation.value == "应用发布")
+        {
+            sel.find("option:selected").val('');
+            sel.hide();
+            $(".sel_second, #select_deploy_type").show();
+        }
+    }
+</script>
+
+
+<div>
+    <table id='list' border="1" width="100%">
+        <tr>
+            <th width="5%"></th>
+            <th width="20%">空闲主机</th>
+            <th width="20%">ip</th>
+            <th width="50%">描述</th>
+        </tr>
+        {% for server in servers %}
+        <tr>
+            <td style="display: none">{{ server.id }}</td>
+            <td><input type="checkbox"></td>
+            <td>{{ server.hostname }}</td>
+            <td>{{ server.ip }}</td>
+            <td>{{ server.description }}</td>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="button_style">
+    <button type="button" id="pop_options" style="margin-right: 15px">选项</button>
+    <form id="upload" enctype="multipart/form-data" method="POST" action="/deploy/upload/">
+        {% csrf_token %}
+        <input type="file" name="file">
+        <input type="submit" value="上传">
+        <!--<button type="button" style="padding: 0 9px 0 9px; font-size: 13px;" onclick="uploadFile()">上传</button>-->
+    </form>
+    {% if names %}
+        <p>success saved to {{ names }}</p>
+    {% endif %}
+</div>
+
+<script>
+    function sure(){
+        var operations = $("#operations").find("option:selected").val();
+        var checkbox = $("input#select_package").val();
+        var func = $("#func").find("option:selected").val();
+        var dp_type = $("#dp_type").find("option:selected").val();
+        $.ajax({
+            url: "a.php",
+            type: "POST",
+            data: {"operations": operations, "package": checkbox, "func": func, "dp_type": dp_type},
+            success: function(msg){
+                if (msg){
+                    alert('yes');
+                    $("#answer").html(msg)
+                }
+            }
+        })
+    }
+</script>
+<div class="deploy_select" style="display: none; line-height: 25px">
+    <form method="POST" name="deploy_select">
+        {% csrf_token %}
+        <div class="sel_first">
+            <span>操作类型 :</span>
+            <select id="operations" name="operations" onchange="pop_functions(this)">
+                <option selected value="">请选择</option>
+                <option value="服务器初始化">服务器初始化</option>
+                <option value="功能服务器部署">功能服务器部署</option>
+                <option value="应用发布">应用发布</option>
+            </select>
+        </div>
+        <div class="sel_second">
+            <div id="select_package" style="display: none">
+                <span>配置（多选） :</span>
+                <input type="checkbox" name="package[]" value="tomcat">tomcat
+                <input type="checkbox" name="package[]" value="mysql">mysql
+                <input type="checkbox" name="package[]" value="jdk">jdk
+            </div>
+            <div id="select_func" style="display: none">
+                <span>功能 :</span>
+                <select id="func" name="func">
+                    <option selected value="">请选择</option>
+                    <option value="nginx">nginx</option>
+                    <option value="nagios">nagios</option>
+                    <option value="samba">samba</option>
+                    <option value="mysql">mysql</option>
+                </select>
+            </div>
+            <div id="select_deploy_type" style="display: none">
+                <span>发布类型 :</span>
+                <select id="dp_type" name="dp_type">
+                    <option selected value="">请选择</option>
+                    <option value="测试">测试</option>
+                    <option value="正式">正式</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <span id="answer"></span>
+        </div>
+        <div style="margin-left: 35px; bottom: 20px; position: absolute;">
+            <button type="button" style="margin-right: 20px; margin-top: 5px; padding: 0 9px 0 9px; font-size: 13px" onclick="sure()">确认</button>
+            <button type="button" id="select_close" style="padding: 0 9px 0 9px; font-size: 13px;">取消</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

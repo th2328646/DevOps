@@ -1,0 +1,50 @@
+{% extends "monitor.html" %}
+
+{% block content %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("button").click(function() {
+            var id = $(this).attr('id');
+            var htmlobj = $.ajax({url: "/log/" + id, async: false});
+            $("#read_log").html(htmlobj.responseText)
+        })
+        })
+</script>
+<div class="row">
+    <form method="GET">
+        <div class="col-lg-4">
+            <input type="text" id="calendar" placeholder="{{ time }}" class="form-control" autocomplete="off" name="time">
+        </div>
+        <!--<div class="col-lg-4">-->
+            <!--<input type="search" placeholder="搜索" class="form-control" name="condition">-->
+        <!--</div>-->
+        <div class="col-lg-2">
+            <input type="submit" value="选择日期">
+        </div>
+    </form>
+</div>
+<div class="row-fluid" style="background: gold">
+    <div class="logs">
+        {% if error %}
+            <p>{{ error }}</p>
+        {% elif logs %}
+            {% for log in logs %}
+                <p>{{ log }}</p>
+            {% endfor %}
+        {% elif all_logs %}
+            <ul>
+                <div id="read_log">
+                    <script>
+                        var logs = {{ all_logs|safe }};
+                        for (var i=0;i<logs.length;i++){
+                            var log_name = logs[i]
+                            document.write("<button id='"+log_name+"' type='button'>"+log_name+"</button>" +
+                                    "<hr>")
+                        }
+                    </script>
+                </div>
+            </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

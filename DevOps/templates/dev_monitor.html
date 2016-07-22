@@ -1,0 +1,200 @@
+{% extends 'monitor.html' %}
+
+{% block content %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("button.server_del").click(function () {
+            var to_delete = $(this).parents('tr');
+            var delete_ip = to_delete.find('td').eq(2).html();
+            var confirm_msg = confirm('Sure to delete?');
+            if(confirm_msg){
+                $.ajax({
+                    type: 'POST',
+                    data: {ip: delete_ip},
+                    datatype: 'json',
+                    url: '/server/delete/',
+                    success: function(msg){
+                        if (msg){
+                            alert('yes');
+                            to_delete.remove();
+                        }
+                        }
+                })
+            }
+        })
+    })
+</script>
+<script type="text/javascript">
+//    $(document).ready(function(){
+//        $("button#server_add").click(function(){
+//            var $pop_add = $('.pop_add');
+//            $pop_add.css({
+//                left: ($("body").width() - $pop_add.width()) / 2 - 20 + "px",
+//                top: ($(window).height() - $pop_add.height()) / 2 + $(window).scrollTop() + "px",
+//                display: "block"
+//            })
+//        });
+//        $("#add_close").click(function(){
+//            $(".pop_add").css("display", "none")
+//        })
+//    })
+</script>
+<script type="text/javascript">
+//    $(document).ready(function(){
+//        $("button.server_edit").click(function(){
+//            var to_edit = $(this).parents('tr');
+//            var edit_id = to_edit.find('td').eq(0).text();
+//            var edit_hostname = to_edit.find('td').eq(1).text();
+//            var edit_ip = to_edit.find('td').eq(2).text();
+//            var edit_description = to_edit.find('td').eq(3).text();
+//            $("#get_id").val(edit_id);
+//            $("#get_hostname").val(edit_hostname);
+//            $("#get_ip").val(edit_ip);
+//            $("#get_description").val(edit_description);
+//            var $pop_edit = $(".pop_edit");
+//            $pop_edit.css({
+//                left: ($("body").width() - $pop_edit.width()) / 2 - 20 + "px",
+//                top: ($(window).height() - $pop_edit.height()) / 2 + $(window).scrollTop() + "px",
+//                display: "block"
+//            })
+//        });
+//        $("#edit_close").click(function(){
+//            $(".pop_edit").css("display", "none")
+//           })
+//    })
+</script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("button#server_add").click(function(){
+            $(".pop_add").fadeIn(600);
+            $(".blackbox").show();
+        });
+        $("#add_close").click(function(){
+            $(".pop_add, .blackbox").hide();
+            })
+        });
+    function check(){
+        var ip = $("#add_ip").val();
+        if(ip == "" || ip == null){
+            alert('Please input ip.');
+            return false;
+        }
+    }
+</script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("button.server_edit").click(function(){
+            var to_edit = $(this).parents('tr');
+            var edit_id = to_edit.find('td').eq(0).text();
+            var edit_hostname = to_edit.find('td').eq(1).text();
+            var edit_ip = to_edit.find('td').eq(2).text();
+            var edit_description = to_edit.find('td').eq(3).text();
+            $("#get_id").val(edit_id);
+            $("#get_hostname").val(edit_hostname);
+            $("#get_ip").val(edit_ip);
+            $("#get_description").val(edit_description);
+            $(".pop_edit").fadeIn(600);
+            $(".blackbox").show();
+            });
+        $("#edit_close").click(function(){
+            $(".pop_edit, .blackbox").hide();
+            })
+    })
+</script>
+
+<div class="row-fluid" id="server_info">
+    <div style="height: 83px; padding-top: 25px">
+        <h style="font-size: 30px">Server List</h>
+    </div>
+    <div>
+        <table id='list' border="1" width="100%">
+            <tr>
+                <th width="10%">hostname</th>
+                <th width="15%">ip</th>
+                <th width="50%">description</th>
+                <th width="25%">operation</th>
+            </tr>
+            {% for server in servers %}
+            <tr>
+                <td style="display: none">{{ server.id }}</td>
+                <td>{{ server.hostname }}</td>
+                <td>{{ server.ip }}</td>
+                <td>{{ server.description }}</td>
+                <td><a href="/monitor/dev_monitor/detail/"><button type="button" style="margin-right: 25px">详情</button></a>
+                    <button class="server_edit" type="button" style="margin-right: 25px">编辑</button>
+                    <button class="server_del">删除</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="button_style">
+        <button id="server_add" type="button">添加设备</button>
+    </div>
+</div>
+<div class="pop_add" style="display: none">
+    <form action="/server/add/" method="post" onsubmit="return check()">
+        {% csrf_token %}
+        <div class="server_add">
+            <div>
+                <span>hostname :</span>
+                <label>
+                    <input name="hostname">
+                </label>
+            </div>
+            <div>
+                <span>ip :</span>
+                <label>
+                    <input name="ip" id="add_ip">
+                </label>
+            </div>
+            <div>
+                <span>description :</span>
+                <label>
+                    <input name="description">
+                </label>
+            </div>
+        </div>
+        <div class="button_style" style="margin-left: 15px">
+            <button type="submit" id="add_submit" style="margin-right: 20px">确定</button>
+            <button type="button" id="add_close">取消</button>
+        </div>
+    </form>
+</div>
+
+<div class="pop_edit" style="display: none">
+    <form action="/server/edit/" method="post">
+        {% csrf_token %}
+        <div class="server_edit">
+            <div>
+                <span>id :</span>
+                <label>
+                    <input id="get_id" name="id" value="{{ server.id }}" readonly="readonly">
+                </label>
+            </div>
+            <div>
+                <span>hostname :</span>
+                <label>
+                    <input id="get_hostname" name="hostname" value="{{ server.hostname }}">
+                </label>
+            </div>
+            <div>
+                <span>ip :</span>
+                <label>
+                    <input id="get_ip" name="ip" value="{{ server.ip }}">
+                </label>
+            </div>
+            <div>
+                <span>description :</span>
+                <label>
+                    <input id="get_description" name="description" value="{{ server.description }}">
+                </label>
+            </div>
+        </div>
+        <div class="button_style" style="margin-left: 15px">
+            <button type="submit" id="edit_submit" style="margin-right: 20px">确定</button>
+            <button type="button" id="edit_close">取消</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
